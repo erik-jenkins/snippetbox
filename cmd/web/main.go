@@ -1,24 +1,39 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
 	"net/http"
-
-	"github.com/erik-jenkins/snippetbox/pkg/middleware"
+	"os"
 )
 
+// application contains all dependencies that need to be injected
+// into the handlers
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
 func main() {
-	port := 4000
-	mux := http.NewServeMux()
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	flag.Parse()
 
-	mux.HandleFunc("/", middleware.Get(home))
-	mux.HandleFunc("/snippet", middleware.Get(showSnippet))
-	mux.HandleFunc("/snippet/create", middleware.Post(createSnippet))
+	// logging
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	fileServer := http.FileServer(http.Dir("./ui/static"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	// application struct contains dependencies that are passed to the handlers
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
 
-	log.Printf("Starting server on :%d\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
+	srv := &http.Server{
+		Addr:     *addr,
+		ErrorLog: errorLog,
+		Handler:  app.routes(),
+	}
+
+	infoLog.Printf("Starting server on %s\n", *addr)
+	errorLog.Fatal(srv.ListenAndServe())
 }
