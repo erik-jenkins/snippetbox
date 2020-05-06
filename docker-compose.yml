@@ -7,8 +7,9 @@ services:
     restart: always
     volumes:
       - "./sql:/docker-entrypoint-initdb.d"
+      - "./sql/conf.d:/etc/mysql/conf.d"
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: snippetbox
     ports:
       - 9000:3306
