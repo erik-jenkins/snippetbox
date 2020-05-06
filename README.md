@@ -1,4 +1,4 @@
-= Snippetbox =
+* Snippetbox
 
 The tutorial project for the "Let's Go!" book by Alex Edwards.
 
