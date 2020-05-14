@@ -1,0 +1,11 @@
+FROM golang:1.13
+
+WORKDIR /go/src/app
+COPY . .
+
+RUN go get -d ./...
+RUN go install -gcflags "all=-N -l" ./...
+
+RUN go get github.com/go-delve/delve/cmd/dlv
+
+CMD ["dlv", "exec", "--headless", "--continue", "--listen", ":8181", "--accept-multiclient", "/go/bin/web"]

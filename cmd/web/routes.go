@@ -3,18 +3,22 @@ package main
 import (
 	"net/http"
 
-	"github.com/erik-jenkins/snippetbox/pkg/middleware"
+	"github.com/gorilla/mux"
 )
 
-func (app *application) routes() *http.ServeMux {
-	mux := http.NewServeMux()
+func (app *application) routes() http.Handler {
+	r := mux.NewRouter()
+	standardMiddleware := []Middleware{
+		app.RecoverPanic,
+		app.LogRequests,
+		SecureHeaders,
+	}
 
-	mux.HandleFunc("/", middleware.Get(app.home))
-	mux.HandleFunc("/snippet", middleware.Get(app.showSnippet))
-	mux.HandleFunc("/snippet/create", middleware.Post(app.createSnippet))
+	r.HandleFunc("/", app.home).Methods("GET")
+	r.HandleFunc("/snippet/{id:[0-9]+}", app.showSnippet).Methods("GET")
+	r.HandleFunc("/snippet/create", app.createSnippet).Methods("POST")
 
-	fileServer := http.FileServer(http.Dir("./ui/static"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
 
-	return mux
+	return ChainMiddleware(r, standardMiddleware...)
 }
