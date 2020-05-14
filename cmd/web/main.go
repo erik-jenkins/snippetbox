@@ -33,11 +33,12 @@ func main() {
 	dbPort := flag.String("dbport", "3306", "Port for MySQL server")
 	dbUser := flag.String("dbuser", "snippetlord", "Username for MySQL user")
 	dbPass := flag.String("dbpass", "password", "Password for MySQL user")
+	dbRetries := flag.Int("dbretries", 10, "Number of retry attempts to connect to the DB")
 	flag.Parse()
 
 	// database
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/snippetbox?parseTime=true", *dbUser, *dbPass, *dbHost, *dbPort)
-	db, err := openDB(dsn)
+	db, err := openDB(dsn, *dbRetries)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -68,9 +69,10 @@ func main() {
 }
 
 // openDB opens a connection to the database and attempts to connect using
-// exponential backoff
-func openDB(dsn string) (*sql.DB, error) {
-	maxNumRetries := 10
+// exponential backoff. `dbRetries` is the number of times we should attempt
+// to reconnect to the DB.
+func openDB(dsn string, dbRetries int) (*sql.DB, error) {
+	maxNumRetries := dbRetries
 	waitPeriod := 1 * time.Second
 
 	db, err := sql.Open("mysql", dsn)
