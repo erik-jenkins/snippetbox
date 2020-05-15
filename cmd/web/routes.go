@@ -16,6 +16,7 @@ func (app *application) routes() http.Handler {
 
 	r.HandleFunc("/", app.home).Methods("GET")
 	r.HandleFunc("/snippet/{id:[0-9]+}", app.showSnippet).Methods("GET")
+	r.HandleFunc("/snippet/create", app.createSnippetForm).Methods("GET")
 	r.HandleFunc("/snippet/create", app.createSnippet).Methods("POST")
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./ui/static"))))
