@@ -23,12 +23,24 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
+func (app *application) addDefaultData(td *templateData, r *http.Request, w http.ResponseWriter) *templateData {
+	session, err := app.session.Get(r, "snippetbox")
+	if err != nil {
+		app.serverError(w, err)
+	}
+
 	if td == nil {
 		td = &templateData{}
 	}
 
 	td.CurrentYear = time.Now().Year()
+
+	td.Flashes = session.Flashes()
+	err = session.Save(r, w)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
 	return td
 }
 
@@ -40,7 +52,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	}
 
 	buf := new(bytes.Buffer)
-	err := ts.Execute(buf, app.addDefaultData(td, r))
+	err := ts.Execute(buf, app.addDefaultData(td, r, w))
 	if err != nil {
 		app.serverError(w, err)
 		return

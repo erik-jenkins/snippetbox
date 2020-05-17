@@ -1,6 +1,6 @@
 function GoRunWeb()
   copen
-  let startCommand = "./webstart.sh"
+  let startCommand = "./scripts/webstart.sh"
   execute "AsyncRun " . startCommand
 endfunction
 
@@ -9,11 +9,11 @@ function GoStopWeb()
 endfunction
 
 function GoRebuildWeb()
-  execute "!" . "./webrebuild.sh"
+  execute "!" . "./scripts/webrebuild.sh"
 endfunction
 
 function GoDebugWeb()
-  execute "!" . "./webdebug.sh"
+  execute "!" . "./scripts/webdebug.sh"
 endfunction
 
 nnoremap <leader>pr :call GoRunWeb()<CR>

@@ -11,6 +11,7 @@ import (
 
 type templateData struct {
 	CurrentYear int
+	Flashes     []interface{}
 	Form        *forms.Form
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
